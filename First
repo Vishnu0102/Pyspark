@@ -1,0 +1,30 @@
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import lit
+
+# Initialize a Spark session
+spark = SparkSession.builder.appName("YourAppName").getOrCreate()
+
+# Read the "Customers" table into a DataFrame
+customers = spark.read.table("Customers")
+
+# Define the three select statements and use unionAll to combine them
+result = customers.select(customers.first_name.alias("name"),
+                           customers.last_name.alias("name"),
+                           customers.age.alias("ages"),
+                           customers.country.alias("country"),
+                           lit(None).alias("ids")) \
+                  .unionAll(customers.select(customers.last_name.alias("name"),
+                                              customers.age.alias("ages"),
+                                              customers.country.alias("country"),
+                                              lit(None).alias("ids"))) \
+                  .unionAll(customers.select(customers.last_name.alias("name"),
+                                              customers.age.alias("ages"),
+                                              customers.country.alias("country"),
+                                              customers.id.alias("ids")))
+
+# You can show the result or write it to another table, as needed
+result.show()
+
+# Don't forget to stop the Spark session when you're done
+spark.stop()
